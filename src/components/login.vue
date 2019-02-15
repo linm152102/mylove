@@ -6,7 +6,7 @@
         <el-input v-model="formdate.username"></el-input>
       </el-form-item>
       <el-form-item label="密码">
-        <el-input v-model="formdate.password"></el-input>
+        <el-input v-model="formdate.password" type="password"></el-input>
       </el-form-item>
       <el-button @click.prevent="handlelogin()" class="login_btn" type="primary">登陆</el-button>
     </el-form>
@@ -19,26 +19,24 @@ export default {
     return {
       formdate: {
         username: '',
-        password:''
+        password: ''
       }
     }
   },
   methods: {
     // 发起登陆请求
     handlelogin () {
-      console.log(this.formdate)
       this.$http.post(`login`, this.formdate)
         .then((res) => {
-          console.log(res)
-          const {data: {data, meta:{msg , status}}} = res
-          if(status === 200) {
-              const {token} = data
-              localStorage.setItem("token" , token)
-              this.$router.push({
-                  name: 'home'
-              })
+          const {data: {data, meta: {msg, status}}} = res
+          if (status === 200) {
+            const {token} = data
+            localStorage.setItem('token', token)
+            this.$router.push({
+              name: 'home'
+            })
           } else {
-              this.$message.error(msg)
+            this.$message.error(msg)
           }
         })
     }
@@ -57,7 +55,6 @@ export default {
   top: 50%;
   transform: translateY(-50%) translateX(-50%);
   width: 500px;
-  /* height: 350px; */
   box-sizing: border-box;
   border-radius: 10px;
   padding: 20px;
