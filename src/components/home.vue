@@ -13,13 +13,18 @@
     </el-header>
     <el-container class="home_aside_main">
       <el-aside class="home_aside" width="200px">
-        <el-menu default-active="2" class="el-menu-vertical-demo" unique-opened>
-          <el-submenu index="1">
+        <el-menu 
+        default-active="2" 
+        class="el-menu-vertical-demo" 
+        unique-opened 
+        router>
+          <el-submenu index="1" >
             <template slot="title">
               <i class="el-icon-location"></i>
               <span>用户管理</span>
             </template>
-              <el-menu-item index="1-1" ><i class="el-icon-menu"></i>用户列表</el-menu-item>
+              <el-menu-item index="users" >
+                <i class="el-icon-menu"></i>用户列表</el-menu-item>
           </el-submenu>
           <el-submenu index="2">
             <template slot="title">
@@ -55,7 +60,7 @@
         </el-menu>
       </el-aside>
       <el-main class="home_main">
-        <el-card shadow="always">一个小卡片</el-card>
+        <router-view></router-view>
       </el-main>
     </el-container>
   </el-container>
@@ -76,6 +81,7 @@ export default {
         name: 'login'
       })
       localStorage.clear()
+      this.$message.warning('退出成功')
     }
   }
 }
