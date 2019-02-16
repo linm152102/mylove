@@ -1,13 +1,11 @@
 <template>
   <!--  -->
   <el-card shadow="always">
-    <!-- 面包屑导航 -->
     <el-breadcrumb separator-class="el-icon-arrow-right">
       <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
       <el-breadcrumb-item>用户管理</el-breadcrumb-item>
       <el-breadcrumb-item>用户列表</el-breadcrumb-item>
     </el-breadcrumb>
-    <!-- 搜索框 -->
     <div style="margin-top: 15px;">
       <el-input
         v-model="query"
@@ -18,9 +16,8 @@
       >
         <el-button slot="append" icon="el-icon-search" @click.prevent="serchUser()"></el-button>
       </el-input>
-      <el-button type="success" plain @click.prevent="userAdd()">添加用户</el-button>
+      <el-button type="success" plain @click.prevent="showAddUser()">添加用户</el-button>
     </div>
-    <!-- 用户列表表单 -->
     <el-table :data="list" style="width: 100%">
       <el-table-column prop="id" label="#" width="80"></el-table-column>
       <el-table-column prop="username" label="姓名" width="140"></el-table-column>
@@ -33,7 +30,6 @@
         </template>
       </el-table-column>
     </el-table>
-    <!-- 分页 ui 组件 -->
     <div class="block">
       <el-pagination
         @size-change="handleSizeChange"
@@ -45,25 +41,25 @@
         :total="total"
       ></el-pagination>
     </div>
-    <!-- 添加用户表单 -->
-    <el-dialog title="添加用户" :visible.sync="dialogFormVisible">
+    <el-dialog title="添加用户" :visible.sync="formUserAdd">
       <el-form :model="formdata">
         <el-form-item label="* 用户名" label-width="100px">
           <el-input v-model="formdata.username" autocomplete="off"></el-input>
         </el-form-item>
-         <el-form-item label="* 密码" label-width="100px">
+        <el-form-item label="* 密码" label-width="100px">
           <el-input v-model="formdata.password" autocomplete="off"></el-input>
         </el-form-item>
-         <el-form-item label="邮箱" label-width="100px">
+        <el-form-item label="邮箱" label-width="100px">
           <el-input v-model="formdata.email" autocomplete="off"></el-input>
         </el-form-item>
-         <el-form-item label="手机号码" label-width="100px">
+        <el-form-item label="手机号码" label-width="100px">
           <el-input v-model="formdata.mobile" autocomplete="off"></el-input>
         </el-form-item>
+        <!--  -->
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+        <el-button @click="formUserAdd = false">取 消</el-button>
+        <el-button type="primary" @click.prevent="userAdd()">确 定</el-button>
       </div>
     </el-dialog>
   </el-card>
@@ -78,12 +74,16 @@ export default {
       list: [],
       total: -1,
       dialogTableVisible: false,
-      dialogFormVisible: false,
+      formUserAdd: false,
       formdata: {
         username: "",
         password: "",
         email: "",
         mobile: ""
+        // username	用户名称	不能为空
+        // password	用户密码	不能为空
+        // email	邮箱	可以为空
+        // mobile 手机号
       }
     };
   },
@@ -91,36 +91,58 @@ export default {
     this.getuserList();
   },
   methods: {
-    userAdd() {
-      this.dialogFormVisible = !this.dialogFormVisible;
+    showAddUser() {//点击添加用户 改变添加用户表单绑定的布尔值属性
+      this.formUserAdd = true;
     },
-    getAllUser() {
+    userAdd() {//添加新用户
+      const uname = /^[a-zA-Z][a-zA-Z0-9]{3,15}$/;
+      const uemail = /^\w+@\w+(\.[a-zA-Z]{2,3}){1,2}$/;
+      if (uname.test(this.formdata.username)) {
+        if (uemail.test(this.formdata.email)) {
+          this.$http.post(`users`, this.formdata).then(res => {
+            const {
+              data: {
+                meta: { msg, status }
+              }
+            } = res;
+            if (status === 201) {
+              this.formUserAdd = !this.formUserAdd;
+              this.$message.success(msg);
+              this.getuserList();
+              this.formdata = {};
+            } else {
+              this.$message.error(msg);
+            }
+          });
+        }else{
+          this.$message.error("邮箱输入错误")
+        }
+      }else{
+        this.$message.error("账号输入错误")
+      }
+    },
+    getAllUser() {//清空搜索框 重新加载列表
       this.pagenum = 1;
       this.getuserList();
     },
-    serchUser() {
+    serchUser() {//点击搜索 获取符合条件的用户列表信息
       this.pagenum = 1;
       this.getuserList();
     },
-    handleSizeChange(val) {
-      // 给每页显示的个数 添加数据
+    handleSizeChange(val) {//当每页显示个数发生变化的时候改变页数 防止出错
       this.pagenum = 1;
       this.pagesize = val;
       this.getuserList();
     },
-    handleCurrentChange(val) {
+    handleCurrentChange(val) {// 当页数发生变化的时候 改变初始页数 防止出错
       this.pagenum = 2;
-      // 给显示第几页添加数据
       this.pagenum = val;
       this.getuserList();
     },
-    async getuserList() {
+    async getuserList() {//发送请求 获取用户列表
       this.$http.defaults.headers.common[
         "Authorization"
       ] = localStorage.getItem("token");
-      // this.$http.defaults.headers.common[
-      //   'Authorization'
-      // ] = localStorage.getItem('token')
       const res = await this.$http.get(
         `users?query=${this.query}&pagenum=${this.pagenum}&pagesize=${
           this.pagesize
@@ -129,15 +151,12 @@ export default {
       const {
         data: {
           data,
-          meta: { status }
+          meta: { msg, status }
         }
       } = res;
-      if (status === 200) {
-        const { users } = data;
-        this.total = data.total;
-        this.list = users;
-        // this.$message.success(msg)
-      }
+      const { users } = data;
+      this.total = data.total;
+      this.list = users;
     }
   }
 };
@@ -145,8 +164,5 @@ export default {
 <style>
 .serch {
   width: 400px;
-}
-.add_user {
-  height: 300px;
 }
 </style>
