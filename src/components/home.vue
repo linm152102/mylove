@@ -13,10 +13,10 @@
     </el-header>
     <el-container class="home_aside_main">
       <el-aside class="home_aside" width="200px">
-        <el-menu 
-        default-active="2" 
-        class="el-menu-vertical-demo" 
-        unique-opened 
+        <el-menu
+        default-active="2"
+        class="el-menu-vertical-demo"
+        unique-opened
         router>
           <el-submenu index="1" >
             <template slot="title">
