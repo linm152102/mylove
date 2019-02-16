@@ -42,8 +42,22 @@
             size="mini"
             @click.prevent="redactUser(scope.row)"
           ></el-button>
-          <el-button type="success" icon="el-icon-check" circle plain size="mini"></el-button>
-          <el-button type="danger" icon="el-icon-delete" circle plain size="mini"></el-button>
+          <el-button
+            @click.prevent="popupPower(scope.row)"
+            type="success"
+            icon="el-icon-check"
+            circle
+            plain
+            size="mini"
+          ></el-button>
+          <el-button
+            type="danger"
+            icon="el-icon-delete"
+            circle
+            plain
+            size="mini"
+            @click="deleteUser(scope.row)"
+          ></el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -84,19 +98,39 @@
     <!-- 编辑用户组件 -->
     <el-dialog title="编辑用户" :visible.sync="redactUserfalse">
       <el-form :model="formdata">
-        <el-form-item label="* 用户名" label-width="100px" >
+        <el-form-item label="* 用户名" label-width="100px">
           <el-input v-model="formdata.username" autocomplete="off" disabled></el-input>
         </el-form-item>
-        <el-form-item label="邮箱" label-width="100px" >
-          <el-input v-model="formdata.email" autocomplete="off" ></el-input>
+        <el-form-item label="邮箱" label-width="100px">
+          <el-input v-model="formdata.email" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="电话" label-width="100px" >
-          <el-input v-model="formdata.mobile" autocomplete="off" ></el-input>
+        <el-form-item label="电话" label-width="100px">
+          <el-input v-model="formdata.mobile" autocomplete="off"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="redactUserfalse = false">取 消</el-button>
         <el-button type="primary" @click.prevent="redactUserOver()">确 定</el-button>
+      </div>
+    </el-dialog>
+    <!-- 删除提示组件 methods 中的 deleteUser(user) 方法 -->
+    <!-- 修改权限组件 -->
+    <el-dialog title="分配角色" :visible.sync="dialogFormVisible">
+      <el-form :model="formdata">
+        <el-form-item label="用户名" label-width="100px">{{formdata.username}}</el-form-item>
+        <el-form-item label="角色" label-width="100px">
+          <el-select v-model="permission" placeholder="请选择活动区域">
+            <el-option label="请选择" :value="-1" disabled></el-option>
+            <!-- <el-option 
+            v-for="item in roleallot" 
+            :label="item.roleName" 
+            :value="item.id"></el-option> -->
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
       </div>
     </el-dialog>
   </el-card>
@@ -111,7 +145,10 @@ export default {
       list: [],
       total: -1,
       formUserAdd: false, //添加用户
-      redactUserfalse:false,//编辑用户
+      redactUserfalse: false, //编辑用户
+      dialogFormVisible: false,
+      permission: -1,
+      roleallot:[],
       formdata: {
         username: "",
         password: "",
@@ -124,21 +161,65 @@ export default {
     this.getuserList();
   },
   methods: {
-    async redactUserOver(){
-     const res = await this.$http.put(`users/${this.formdata.id}`,{
-        email:this.formdata.email,
-        mobile:this.formdata.mobile
+    popupPower(user) {
+      this.formdata = user;
+      this.dialogFormVisible = true;
+      this.$http.get(`roles`).then((res)=>{
+        const {data:{data,meta}} = res
+        // console.log(data) 
+        this.roleallot = data 
+        console.log(this.roleallot)
+        console.log(meta)
       })
-     const { data:{meta:{msg , status}}} = res
-     if(status === 200) {
-       this.$message.success(msg)
-       this.redactUserfalse = false
-       this.getuserList()
-     }
+    },
+    deleteUser(user) {
+      //删除单个用户
+      this.$confirm("此操作将永久删除该永华, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(async () => {
+          // console.log(user.id)
+          const res = await this.$http.delete(`users/${user.id}`);
+          const {
+            data: {
+              meta: { msg, status }
+            }
+          } = res;
+          if (status === 200) {
+            this.pagenum = 1;
+            this.getuserList();
+            this.$message.success(msg);
+          } else {
+            this.$message.error(msg);
+          }
+        })
+        .catch(() => {
+          this.$message.info("删除取消");
+        });
+    },
+    async redactUserOver() {
+      //修改单个用户
+      const res = await this.$http.put(`users/${this.formdata.id}`, {
+        email: this.formdata.email,
+        mobile: this.formdata.mobile
+      });
+      const {
+        data: {
+          meta: { msg, status }
+        }
+      } = res;
+      if (status === 200) {
+        this.$message.success(msg);
+        this.redactUserfalse = false;
+        this.getuserList();
+      }
     },
     redactUser(user) {
-      this.redactUserfalse = true
-      this.formdata = user
+      //弹出提示框 给formdata 赋值
+      this.redactUserfalse = true;
+      this.formdata = user;
     },
     showAddUser() {
       //点击添加用户 改变添加用户表单绑定的布尔值属性
@@ -151,7 +232,7 @@ export default {
       if (uname.test(this.formdata.username)) {
         if (uemail.test(this.formdata.email)) {
           this.$http.post(`users`, this.formdata).then(res => {
-            const { 
+            const {
               data: {
                 meta: { msg, status }
               }
