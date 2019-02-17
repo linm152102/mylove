@@ -26,14 +26,18 @@
       <el-table-column prop="username" label="姓名" width="140"></el-table-column>
       <el-table-column prop="email" label="邮箱" width="180"></el-table-column>
       <el-table-column prop="mobile" label="电话" width="180"></el-table-column>
-      <el-table-column prop="create_time" label="创建日期" width="180"></el-table-column>
+      <el-table-column  label="创建日期" width="180">
+        <template slot-scope="scope">
+            {{scope.row.create_time | fmtDate}}
+        </template>
+      </el-table-column>
       <el-table-column label="用户状态" width="130">
         <template slot-scope="scope">
           <!-- @click.prevent="updataUserType()" -->
-          <el-switch 
-          v-model="scope.row.mg_state" 
-          active-color="#13ce66" 
-          inactive-color="#ff4949" 
+          <el-switch
+          v-model="scope.row.mg_state"
+          active-color="#13ce66"
+          inactive-color="#ff4949"
           @change="updataUserType(scope.row)"
           ></el-switch>
         </template>
@@ -170,21 +174,24 @@ export default {
   },
   methods: {
     async updataUserType (userType) {
+      // 修改用户状态
       const res = await this.$http.put(`users/${userType.id}/state/${userType.mg_state}`)
-      const {data:{meta:{msg , status}}} = res
-      if (status=== 200) {
-         this.$message.success(msg)
+      const {data: {meta: {msg, status}}} = res
+      if (status === 200) {
+        this.$message.success(msg)
       }
     },
     async allotUserPower () {
-      const res = await this.$http.put(`users/${this.formdata.id}/role`,{rid:this.permission})
-      const {data:{meta:{msg ,status}}} = res 
-      if(status === 200) {
+      // 修改用户权限发送请求
+      const res = await this.$http.put(`users/${this.formdata.id}/role`, {rid: this.permission})
+      const {data: {meta: {msg, status}}} = res
+      if (status === 200) {
         this.popupUserPower = false
         this.$message.success(msg)
       }
     },
     popupPower (user) {
+      // 获取用户权限 赋值谈话框
       this.formdata = user
       this.popupUserPower = true
       this.$http.get(`roles`).then(res => {
