@@ -29,10 +29,16 @@
       <el-table-column prop="create_time" label="创建日期" width="180"></el-table-column>
       <el-table-column label="用户状态" width="130">
         <template slot-scope="scope">
-          <el-switch v-model="scope.row.mg_state" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
+          <!-- @click.prevent="updataUserType()" -->
+          <el-switch 
+          v-model="scope.row.mg_state" 
+          active-color="#13ce66" 
+          inactive-color="#ff4949" 
+          @change="updataUserType(scope.row)"
+          ></el-switch>
         </template>
       </el-table-column>
-      <el-table-column label="创建日期" width="180">
+      <el-table-column label="操作" width="180">
         <template slot-scope="scope">
           <el-button
             type="primary"
@@ -115,120 +121,144 @@
     </el-dialog>
     <!-- 删除提示组件 methods 中的 deleteUser(user) 方法 -->
     <!-- 修改权限组件 -->
-    <el-dialog title="分配角色" :visible.sync="dialogFormVisible">
+    <el-dialog title="分配角色" :visible.sync="popupUserPower">
       <el-form :model="formdata">
         <el-form-item label="用户名" label-width="100px">{{formdata.username}}</el-form-item>
         <el-form-item label="角色" label-width="100px">
-          <el-select v-model="permission" placeholder="请选择活动区域">
+          <el-select v-model="permission">
             <el-option label="请选择" :value="-1" disabled></el-option>
-            <!-- <el-option 
-            v-for="item in roleallot" 
-            :label="item.roleName" 
-            :value="item.id"></el-option> -->
+            <el-option
+              v-for="item in roleallot"
+              :key="item.id"
+              :label="item.roleName"
+              :value="item.id"
+            ></el-option>
           </el-select>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+        <el-button @click="popupUserPower = false">取 消</el-button>
+        <el-button type="primary" @click.prevent="allotUserPower()" >确 定</el-button>
       </div>
     </el-dialog>
   </el-card>
 </template>
 <script>
 export default {
-  data() {
+  data () {
     return {
-      query: "",
+      query: '',
       pagenum: 1,
       pagesize: 2,
       list: [],
       total: -1,
-      formUserAdd: false, //添加用户
-      redactUserfalse: false, //编辑用户
-      dialogFormVisible: false,
+      formUserAdd: false, // 添加用户
+      redactUserfalse: false, // 编辑用户
+      popupUserPower: false,
       permission: -1,
-      roleallot:[],
+      roleallot: [],
       formdata: {
-        username: "",
-        password: "",
-        email: "",
-        mobile: ""
+        username: '',
+        password: '',
+        email: '',
+        mobile: ''
       }
-    };
+    }
   },
-  created() {
-    this.getuserList();
+  created () {
+    this.getuserList()
   },
   methods: {
-    popupPower(user) {
-      this.formdata = user;
-      this.dialogFormVisible = true;
-      this.$http.get(`roles`).then((res)=>{
-        const {data:{data,meta}} = res
-        // console.log(data) 
-        this.roleallot = data 
-        console.log(this.roleallot)
-        console.log(meta)
+    async updataUserType (userType) {
+      const res = await this.$http.put(`users/${userType.id}/state/${userType.mg_state}`)
+      const {data:{meta:{msg , status}}} = res
+      if (status=== 200) {
+         this.$message.success(msg)
+      }
+    },
+    async allotUserPower () {
+      const res = await this.$http.put(`users/${this.formdata.id}/role`,{rid:this.permission})
+      const {data:{meta:{msg ,status}}} = res 
+      if(status === 200) {
+        this.popupUserPower = false
+        this.$message.success(msg)
+      }
+    },
+    popupPower (user) {
+      this.formdata = user
+      this.popupUserPower = true
+      this.$http.get(`roles`).then(res => {
+        const {
+          data: {
+            data,
+            meta: { status }
+          }
+        } = res
+        if (status === 200) {
+          this.roleallot = data
+          this.$http.get(`users/${user.id}`).then(resId => {
+            this.permission = resId.data.data.rid
+          })
+        }
       })
     },
-    deleteUser(user) {
-      //删除单个用户
-      this.$confirm("此操作将永久删除该永华, 是否继续?", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning"
+    deleteUser (user) {
+      // 删除单个用户
+      this.$confirm('此操作将永久删除该永华, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
       })
         .then(async () => {
           // console.log(user.id)
-          const res = await this.$http.delete(`users/${user.id}`);
+          const res = await this.$http.delete(`users/${user.id}`)
           const {
             data: {
               meta: { msg, status }
             }
-          } = res;
+          } = res
           if (status === 200) {
-            this.pagenum = 1;
-            this.getuserList();
-            this.$message.success(msg);
+            this.pagenum = 1
+            this.getuserList()
+            this.$message.success(msg)
           } else {
-            this.$message.error(msg);
+            this.$message.error(msg)
           }
         })
         .catch(() => {
-          this.$message.info("删除取消");
-        });
+          this.$message.info('删除取消')
+        })
     },
-    async redactUserOver() {
-      //修改单个用户
+    async redactUserOver () {
+      // 修改单个用户
       const res = await this.$http.put(`users/${this.formdata.id}`, {
         email: this.formdata.email,
         mobile: this.formdata.mobile
-      });
+      })
       const {
         data: {
           meta: { msg, status }
         }
-      } = res;
+      } = res
       if (status === 200) {
-        this.$message.success(msg);
-        this.redactUserfalse = false;
-        this.getuserList();
+        this.$message.success(msg)
+        this.redactUserfalse = false
+        this.getuserList()
       }
     },
-    redactUser(user) {
-      //弹出提示框 给formdata 赋值
-      this.redactUserfalse = true;
-      this.formdata = user;
+    redactUser (user) {
+      // 弹出提示框 给formdata 赋值
+      this.redactUserfalse = true
+      this.formdata = user
     },
-    showAddUser() {
-      //点击添加用户 改变添加用户表单绑定的布尔值属性
-      this.formUserAdd = true;
+    showAddUser () {
+      // 点击添加用户 改变添加用户表单绑定的布尔值属性
+      this.formUserAdd = true
     },
-    userAdd() {
-      //添加新用户
-      const uname = /^[a-zA-Z][a-zA-Z0-9]{3,15}$/;
-      const uemail = /^\w+@\w+(\.[a-zA-Z]{2,3}){1,2}$/;
+    userAdd () {
+      // 添加新用户
+      const uname = /^[a-zA-Z][a-zA-Z0-9]{3,15}$/
+      const uemail = /^\w+@\w+(\.[a-zA-Z]{2,3}){1,2}$/
       if (uname.test(this.formdata.username)) {
         if (uemail.test(this.formdata.email)) {
           this.$http.post(`users`, this.formdata).then(res => {
@@ -236,67 +266,59 @@ export default {
               data: {
                 meta: { msg, status }
               }
-            } = res;
+            } = res
             if (status === 201) {
-              this.formUserAdd = !this.formUserAdd;
-              this.$message.success(msg);
-              this.getuserList();
-              this.formdata = {};
+              this.formUserAdd = !this.formUserAdd
+              this.$message.success(msg)
+              this.getuserList()
+              this.formdata = {}
             } else {
-              this.$message.error(msg);
+              this.$message.error(msg)
             }
-          });
+          })
         } else {
-          this.$message.error("邮箱输入错误");
+          this.$message.error('邮箱输入错误')
         }
       } else {
-        this.$message.error("账号输入错误");
+        this.$message.error('账号输入错误')
       }
     },
-    getAllUser() {
-      //清空搜索框 重新加载列表
-      this.pagenum = 1;
-      this.getuserList();
+    getAllUser () {
+      // 清空搜索框 重新加载列表
+      this.pagenum = 1
+      this.getuserList()
     },
-    serchUser() {
-      //点击搜索 获取符合条件的用户列表信息
-      this.pagenum = 1;
-      this.getuserList();
+    serchUser () {
+      // 点击搜索 获取符合条件的用户列表信息
+      this.pagenum = 1
+      this.getuserList()
     },
-    handleSizeChange(val) {
-      //当每页显示个数发生变化的时候改变页数 防止出错
-      this.pagenum = 1;
-      this.pagesize = val;
-      this.getuserList();
+    handleSizeChange (val) {
+      // 当每页显示个数发生变化的时候改变页数 防止出错
+      this.pagenum = 1
+      this.pagesize = val
+      this.getuserList()
     },
-    handleCurrentChange(val) {
+    handleCurrentChange (val) {
       // 当页数发生变化的时候 改变初始页数 防止出错
-      this.pagenum = 2;
-      this.pagenum = val;
-      this.getuserList();
+      this.pagenum = 2
+      this.pagenum = val
+      this.getuserList()
     },
-    async getuserList() {
-      //发送请求 获取用户列表
-      this.$http.defaults.headers.common[
-        "Authorization"
-      ] = localStorage.getItem("token");
+    async getuserList () {
+      // 发送请求 获取用户列表
+      this.$http.defaults.headers.common['Authorization'] = localStorage.getItem('token')
       const res = await this.$http.get(
         `users?query=${this.query}&pagenum=${this.pagenum}&pagesize=${
           this.pagesize
         }`
-      );
-      const {
-        data: {
-          data,
-          meta: { msg, status }
-        }
-      } = res;
-      const { users } = data;
-      this.total = data.total;
-      this.list = users;
+      )
+      const {data: {data}} = res
+      this.total = data.total
+      this.list = data.users
     }
   }
-};
+}
 </script>
 <style>
 .serch {
