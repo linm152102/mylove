@@ -81,7 +81,7 @@
 </template>
 <script>
 export default {
-  data() {
+  data () {
     return {
       list: [],
       checkList: [],
@@ -89,88 +89,88 @@ export default {
       rolesId: -1,
       dialogVisible: false,
       defaultProps: {
-        children: "children",
-        label: "authName"
+        children: 'children',
+        label: 'authName'
       }
-    };
+    }
   },
-  created() {
-    this.getuserList();
+  created () {
+    this.getuserList()
     // this.allotPower();
   },
   methods: {
-    async handleClose(roles , rolesId) {
-        const res = await this.$http.delete(`roles/${roles.id}/rights/${rolesId}`)
-        const {data,meta:{msg,status}} = res.data
-        if(status === 200){
-            roles.children = data
-            this.$message.success(msg)
-        }else{
-            this.$message.error(msg)
-        }
+    async handleClose (roles, rolesId) {
+      const res = await this.$http.delete(`roles/${roles.id}/rights/${rolesId}`)
+      const {data, meta: {msg, status}} = res.data
+      if (status === 200) {
+        roles.children = data
+        this.$message.success(msg)
+      } else {
+        this.$message.error(msg)
+      }
     },
-    async handleSetRoles() {
-      //点击确定 发送请求修改当前用户的权限
+    async handleSetRoles () {
+      // 点击确定 发送请求修改当前用户的权限
       //   const arr2 = this.$refs.treeList.getHalfCheckedNodes();
-      //获取半选的节点 以对象的形式展示
-      const arr1 = this.$refs.treeList.getHalfCheckedKeys();
+      // 获取半选的节点 以对象的形式展示
+      const arr1 = this.$refs.treeList.getHalfCheckedKeys()
       //   获取所有半选的节点 id arr1
-      const arr3 = this.$refs.treeList.getCheckedKeys();
+      const arr3 = this.$refs.treeList.getCheckedKeys()
       //   获取所有全选的id
-      const arr = [...arr1, ...arr3];
+      const arr = [...arr1, ...arr3]
       const res = await this.$http.post(`roles/${this.rolesId}/rights`, {
-        rids: arr.join(",")
-      });
-      console.log(res);
+        rids: arr.join(',')
+      })
+      console.log(res)
       const {
         meta: { msg, status }
-      } = res.data;
+      } = res.data
       if (status === 200) {
-        this.$message.success(msg);
+        this.$message.success(msg)
       } else {
-        this.$message.error(msg);
+        this.$message.error(msg)
       }
-      this.dialogVisible = false;
+      this.dialogVisible = false
     },
-    upfoldList(tree) {
-      //点击按钮 获取树状权限列表
-      this.allotPower();
-      this.dialogVisible = true;
-      this.rolesId = tree.id;
-      const arr = [];
+    upfoldList (tree) {
+      // 点击按钮 获取树状权限列表
+      this.allotPower()
+      this.dialogVisible = true
+      this.rolesId = tree.id
+      const arr = []
       tree.children.forEach(item => {
         item.children.forEach(item1 => {
           item1.children.forEach(item2 => {
-            arr.push(item2.id);
-          });
-        });
-      });
-      this.checkList = arr;
+            arr.push(item2.id)
+          })
+        })
+      })
+      this.checkList = arr
     },
-    async allotPower() {
-      //获取节点树信息
-      const res = await this.$http.get(`rights/tree`);
+    async allotPower () {
+      // 获取节点树信息
+      const res = await this.$http.get(`rights/tree`)
       const {
         data,
         meta: { status }
-      } = res.data;
+      } = res.data
       if (status === 200) {
-        this.treeList = data;
+        this.treeList = data
       }
     },
-    async getuserList() {
-      //获取用户权限信息
-      const res = await this.$http.get(`roles`);
+    async getuserList () {
+      // 获取用户权限信息
+      const res = await this.$http.get(`roles`)
       const {
         data,
         meta: { status }
-      } = res.data;
+      } = res.data
       if (status === 200) {
-        this.list = data;
+        this.list = data
       }
     }
   }
-};
+}
 </script>
 <style>
 .add_user {
@@ -186,5 +186,3 @@ export default {
     margin-left: 40px;
 } */
 </style>
-
-
