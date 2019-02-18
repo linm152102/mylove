@@ -8,7 +8,7 @@
       <el-form-item label="密码">
         <el-input v-model="formdate.password" type="password"></el-input>
       </el-form-item>
-      <el-button @click.prevent="handlelogin()" class="login_btn" type="primary">登陆</el-button>
+      <el-button @click="handlelogin()" class="login_btn" type="primary">登陆</el-button>
     </el-form>
   </div>
 </template>

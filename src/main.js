@@ -7,7 +7,7 @@ import '@/assets/css/base.css'
 import App from './App'
 import router from './router'
 import moment from 'moment'
-import HttpServer from './publicJs/http.js'
+import HttpServer from '@/plugins/http.js'
 
 Vue.use(ElementUI)
 Vue.use(HttpServer)
