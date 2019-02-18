@@ -6,7 +6,7 @@ HttpServer.install = function (Vue) {
   axios.interceptors.request.use(function (config) {
     if (config.url !== 'login') {
       const token = localStorage.getItem('token')
-      axios.defaults.headers.common['Authorization'] = token
+      config.headers.common['Authorization'] = token
       // axios.defaults.headers.common['Authorization'] = localStorage.getItem('token')
     }
     return config

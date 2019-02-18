@@ -13,12 +13,21 @@
     </el-header>
     <el-container class="home_aside_main">
       <el-aside class="home_aside" width="200px">
-        <el-menu
-        default-active="2"
-        class="el-menu-vertical-demo"
-        unique-opened
-        router>
-          <el-submenu index="1" >
+        <el-menu unique-opened router>
+          <!-- fenzu -->
+          <el-submenu v-for="item in list" :index="''+item.id" :key="item.id">
+            <template slot="title">
+              <i class="el-icon-location"></i>
+              <span>{{item.authName}}</span>
+            </template>
+            <el-menu-item :index="'/'+item1.path" v-for="item1 in item.children" :key="item1.id">
+              <i class="el-icon-menu"></i>
+              {{item1.authName}}
+            </el-menu-item>
+          </el-submenu>
+
+          <!-- fenzu -->
+          <!-- <el-submenu index="1" >
             <template slot="title">
               <i class="el-icon-location"></i>
               <span>用户管理</span>
@@ -31,7 +40,7 @@
               <i class="el-icon-location"></i>
               <span>权限管理</span>
             </template>
-              <el-menu-item index="1-1"><i class="el-icon-menu"></i>角色列表</el-menu-item>
+              <el-menu-item index="roles"><i class="el-icon-menu"></i>角色列表</el-menu-item>
               <el-menu-item index="rights"><i class="el-icon-menu"></i>权限列表</el-menu-item>
           </el-submenu>
           <el-submenu index="3">
@@ -56,7 +65,7 @@
               <span>数据统计</span>
             </template>
               <el-menu-item index="1-1"><i class="el-icon-menu"></i>数据报表</el-menu-item>
-          </el-submenu>
+          </el-submenu>-->
         </el-menu>
       </el-aside>
       <el-main class="home_main">
@@ -68,23 +77,40 @@
 
 <script>
 export default {
-  beforeMount () {
-    if (!localStorage.getItem('token')) {
+  data() {
+    return {
+      list: []
+    };
+  },
+  beforeMount() {
+    if (!localStorage.getItem("token")) {
       this.$router.push({
-        name: 'login'
-      })
+        name: "login"
+      });
     }
   },
+  created() {
+    this.getAllList();
+  },
   methods: {
-    userquit () {
+    async getAllList() {//获取当前登陆用户可以查看的权限 循环加载页面
+      const res = await this.$http.get(`menus`);
+      const { data, meta:{msg ,status} } = res.data;
+      if(status === 200) {
+         this.list = data;
+      }else{
+        this.$message.erroe(msg)
+      }
+    },
+    userquit() {
       this.$router.push({
-        name: 'login'
-      })
-      localStorage.clear()
-      this.$message.warning('退出成功')
+        name: "login"
+      });
+      localStorage.clear();
+      this.$message.warning("退出成功");
     }
   }
-}
+};
 </script>
 
 <style>

@@ -314,7 +314,7 @@ export default {
     },
     async getuserList () {
       // 发送请求 获取用户列表
-      this.$http.defaults.headers.common['Authorization'] = localStorage.getItem('token')
+      // this.$http.defaults.headers.common['Authorization'] = localStorage.getItem('token')
       const res = await this.$http.get(
         `users?query=${this.query}&pagenum=${this.pagenum}&pagesize=${
           this.pagesize
