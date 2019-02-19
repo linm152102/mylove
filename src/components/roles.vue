@@ -96,7 +96,7 @@ export default {
   },
   created () {
     this.getuserList()
-    // this.allotPower();
+    this.allotPower()
   },
   methods: {
     async handleClose (roles, rolesId) {
@@ -133,8 +133,11 @@ export default {
       this.dialogVisible = false
     },
     upfoldList (tree) {
+      this.checkList=[]
+      // consoel.log(checkList)
+      console.log(tree)
       // 点击按钮 获取树状权限列表
-      this.allotPower()
+      // this.allotPower()
       this.dialogVisible = true
       this.rolesId = tree.id
       const arr = []
@@ -146,6 +149,8 @@ export default {
         })
       })
       this.checkList = arr
+      console.log(this.checkList.length)
+      this.getuserList()
     },
     async allotPower () {
       // 获取节点树信息
