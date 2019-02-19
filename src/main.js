@@ -14,10 +14,6 @@ Vue.use(HttpServer)
 
 Vue.config.productionTip = false
 
-// Vue.filter('fmtDate' ,(value , fmtString ) =>{
-//   fmtString = 'YYYY-MM-DD'
-//   return moment(value).format(fmtString)
-// })
 Vue.filter('fmtDate', (value) => {
   return moment(value).format('YYYY-MM-DD')
 })
