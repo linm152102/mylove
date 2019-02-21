@@ -85,112 +85,118 @@
   </el-card>
 </template>
 <script>
-import 'quill/dist/quill.core.css'
-import 'quill/dist/quill.snow.css'
-import 'quill/dist/quill.bubble.css'
+import "quill/dist/quill.core.css";
+import "quill/dist/quill.snow.css";
+import "quill/dist/quill.bubble.css";
 
-import { quillEditor } from 'vue-quill-editor'
+import { quillEditor } from "vue-quill-editor";
 
 export default {
   components: {
     quillEditor
   },
-  data () {
+  data() {
     return {
-      active: '1', // 步骤组件默认选中的第一个 提供数据和tabs 互通
+      active: "1", // 步骤组件默认选中的第一个 提供数据和tabs 互通
       from: {
         // 提交商品的数据
-        goods_name: '',
-        goods_cat: '',
-        goods_price: '',
-        goods_number: '',
-        goods_weight: '',
-        goods_introduce: '',
+        goods_name: "",
+        goods_cat: "",
+        goods_price: "",
+        goods_number: "",
+        goods_weight: "",
+        goods_introduce: "",
         pics: [],
         attrs: []
       },
       options: [], // 级联组件中的数据
       optionsList: {
         // 配置级联中属性 使得级联中属性和后台获取的数据匹配
-        value: 'cat_id',
-        label: 'cat_name',
-        children: 'children'
+        value: "cat_id",
+        label: "cat_name",
+        children: "children"
       },
       checkedList: [], // 商品属性数据列表 默认每个都选中 动态
       inputList: [], // 商品属性数据列表 静态
       goodsCheckList: [], // 级联组件中选中的分类的每一项id
       headersToken: {
-        Authorization: localStorage.getItem('token')
+        Authorization: localStorage.getItem("token")
       }
-    }
+    };
   },
-  created () {
-    this.getGoodList()
+  created() {
+    this.getGoodList();
   },
   methods: {
-    getshop () {
-      this.getSpecList()
+    getshop() {
+      this.getSpecList();
     },
-    async goodsAdd () {
-      // console.log(1433223)
-      this.from.goods_cat = this.goodsCheckList.join(',')
-      const dy = this.checkedList
-      const arr1 = dy.map((item) => {
-        return {attr_id: item.attr_id, attr_value: item.attr_vals}
-      })
-      arr1.forEach((item) => {
-        item.attr_value = item.attr_value.join(',')
-      })
-      const arr2 = this.inputList.map((item) => {
-        return {attr_id: item.attr_id, attr_value: item.attr_vals}
-      })
-      const arr = [...arr1, ...arr2]
-      this.from.attrs = arr
-      const res = await this.$http.post(`goods`, this.from)
-      const {meta: {msg, status}} = res.data
+    async goodsAdd() {
+      // console.log(1433223);
+      this.from.goods_cat = this.goodsCheckList.join(",");
+
+      const arr1 = this.checkedList.map(item => {
+        return { attr_id: item.attr_id, attr_value: item.attr_vals.join(",") };
+      });
+      // const dy = this.checkedList;
+      // const arr1 = dy.map(item => {
+      //   return { attr_id: item.attr_id, attr_value: item.attr_vals.join(",") };
+      // });
+      // arr1.forEach(item => {
+      //   item.attr_value = item.attr_value.join(",");
+      // });
+      const arr2 = this.inputList.map(item => {
+        return { attr_id: item.attr_id, attr_value: item.attr_vals };
+      });
+      const arr = [...arr1, ...arr2];
+      this.from.attrs = arr;
+      const res = await this.$http.post(`goods`, this.from);
+      const {
+        meta: { msg, status }
+      } = res.data;
       if (status === 201) {
-        this.$message.success(msg)
-        this.$router.push({name: 'goods'})
+        this.$message.success(msg);
+        this.$router.push({ name: "goods" });
       }
 
       // 这个是要问 拉拉或者讲师的  为啥这个会报错
-    //   const arr = this.checkedList
-    //   const arr1 = arr.map((item)=>{
-    //     return{attr_id: item.attr_id, attr_value: item.attr_vals.join(',')}
-    //   })
-    //   console.log(arr1)
-    //   this.checkedList.forEach((item)=>{
-    //     item.attr_vals = item.attr_vals.join(',')
-    //   })
-    // console.log(this.inputList)
-    // console.log(this.checkedList)
+      //   const arr = this.checkedList
+      //   const arr1 = arr.map((item)=>{
+      //     return{attr_id: item.attr_id, attr_value: item.attr_vals.join(',')}
+      //   })
+      //   console.log(arr1)
+      //   this.checkedList.forEach((item)=>{
+      //     item.attr_vals = item.attr_vals.join(',')
+      //   })
+      // console.log(this.inputList)
+      // console.log(this.checkedList)
       // const arr = [...this.checkedList,...this.inputList]
       // console.log(arr)
     },
-    handleRemove (file, fileList) {
+    handleRemove(file, fileList) {
       const arr = this.from.pics.findIndex(item => {
-        return item.pics === file.response.data.tmp_path
-      })
-      this.from.pics.splice(arr, 1)
+        return item.pics === file.response.data.tmp_path;
+      });
+      this.from.pics.splice(arr, 1);
     },
-    handleSuccess (response, file, fileList) {
+    handleSuccess(response, file, fileList) {
       const {
         data,
         meta: { msg, status }
-      } = response
+      } = response;
       if (status === 200) {
         this.from.pics.push({
           pic: data.tmp_path
-        })
+        });
       } else {
-        this.$message.error(msg)
+        this.$message.error(msg);
       }
     },
-    getSpecList () {
+    getSpecList() {
       if (this.goodsCheckList.length !== 3) {
-        this.$message.error('请选择第三级分类')
-        this.active = '1'
-        return
+        this.$message.error("请选择第三级分类");
+        this.active = "1";
+        return;
         // 只需要判断是否选择第三类类型 不需要判断是否选择第几项 一块加载
       }
       this.$http
@@ -199,43 +205,43 @@ export default {
           const {
             data,
             meta: { status }
-          } = res.data
+          } = res.data;
           if (status === 200) {
             data.forEach(item => {
-              item.attr_vals = item.attr_vals.split(',')
-            })
-            this.checkedList = data
+              item.attr_vals = item.attr_vals.split(",");
+            });
+            this.checkedList = data;
           }
-        })
+        });
       this.$http
         .get(`categories/${this.goodsCheckList[2]}/attributes?sel=only`)
         .then(resData => {
           const {
             meta: { status }
-          } = resData.data
-          if (status === 200) this.inputList = resData.data.data
-        })
+          } = resData.data;
+          if (status === 200) this.inputList = resData.data.data;
+        });
     },
-    geterror () {
+    geterror() {
       if (this.goodsCheckList.length !== 3) {
-        this.$message.error('请选择第三级分类')
+        this.$message.error("请选择第三级分类");
       }
     },
-    async getGoodList () {
+    async getGoodList() {
       // 获取商品类型 当获取成功的时候给级联组件赋值 当这个组件没有显示完成时加载 在created 中使用
-      const res = await this.$http.get(`categories?type=3`)
+      const res = await this.$http.get(`categories?type=3`);
       const {
         data: {
           data,
           meta: { status }
         }
-      } = res
+      } = res;
       if (status === 200) {
-        this.options = data
+        this.options = data;
       }
     }
   }
-}
+};
 </script>
 <style>
 .alert_message {
