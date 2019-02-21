@@ -133,7 +133,7 @@ export default {
       this.dialogVisible = false
     },
     upfoldList (tree) {
-      this.checkList=[]
+      this.checkList = []
       // consoel.log(checkList)
       console.log(tree)
       // 点击按钮 获取树状权限列表

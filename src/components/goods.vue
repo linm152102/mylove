@@ -40,35 +40,34 @@
 </template>
 <script>
 export default {
-    data (){
-        return{
-            list:[],
-            query:'',
-            pagenum:'1',
-            pagesize:'10'
-        }
-    },
-    created(){
-        this.getGoodsList()
-    },
-    methods:{
-      goodsAdd(){
-        this.$router.push({name:'goodsadd'})
-      },
-      userUpload(){
-        //用户编辑方法
-      },
-      userDelete(){
-        //用户删除方法
-      },
-        async getGoodsList(){
-           const {data:{data:{goods},meta:{status}}} = await this.$http.get(`goods?type=3&pagenum=${this.pagenum}&pagesize=${this.pagesize}`)
-           if(status===200){
-             this.list = goods
-           }
-           
-        }
+  data () {
+    return {
+      list: [],
+      query: '',
+      pagenum: '1',
+      pagesize: '10'
     }
+  },
+  created () {
+    this.getGoodsList()
+  },
+  methods: {
+    goodsAdd () {
+      this.$router.push({name: 'goodsadd'})
+    },
+    userUpload (user) {
+      // 用户编辑方法
+    },
+    userDelete (user) {
+      // 用户删除方法
+    },
+    async getGoodsList () {
+      const {data: {data: {goods}, meta: {status}}} = await this.$http.get(`goods?type=3&pagenum=${this.pagenum}&pagesize=${this.pagesize}`)
+      if (status === 200) {
+        this.list = goods
+      }
+    }
+  }
 }
 </script>
 <style>
@@ -76,4 +75,3 @@ export default {
   width: 300px;
 }
 </style>
-
