@@ -13,7 +13,7 @@
     </el-header>
     <el-container class="home_aside_main">
       <el-aside class="home_aside" width="200px">
-        <el-menu unique-opened router>
+        <el-menu unique-opened router @select="fn" :default-active="$route.fullPath">
           <!-- fenzu -->
           <el-submenu v-for="item in list" :index="''+item.id" :key="item.id">
             <template slot="title">
@@ -77,40 +77,48 @@
 
 <script>
 export default {
-  data () {
+  data() {
     return {
       list: []
-    }
+    };
   },
-  beforeMount () {
-    if (!localStorage.getItem('token')) {
+  beforeMount() {
+    if (!localStorage.getItem("token")) {
       this.$router.push({
-        name: 'login'
-      })
+        name: "login"
+      });
     }
   },
-  created () {
-    this.getAllList()
+  created() {
+    this.getAllList();
   },
   methods: {
-    async getAllList () { // 获取当前登陆用户可以查看的权限 循环加载页面
-      const res = await this.$http.get(`menus`)
-      const { data, meta: {msg, status} } = res.data
+    fn(index, indexPath) {
+      console.log(index, indexPath);
+      console.log(this.$route.fullPath);
+    },
+    async getAllList() {
+      // 获取当前登陆用户可以查看的权限 循环加载页面
+      const res = await this.$http.get(`menus`);
+      const {
+        data,
+        meta: { msg, status }
+      } = res.data;
       if (status === 200) {
-        this.list = data
+        this.list = data;
       } else {
-        this.$message.erroe(msg)
+        this.$message.erroe(msg);
       }
     },
-    userquit () {
+    userquit() {
       this.$router.push({
-        name: 'login'
-      })
-      localStorage.clear()
-      this.$message.warning('退出成功')
+        name: "login"
+      });
+      localStorage.clear();
+      this.$message.warning("退出成功");
     }
   }
-}
+};
 </script>
 
 <style>
